@@ -1,0 +1,2 @@
+# babyai
+Baby AI hackathon
