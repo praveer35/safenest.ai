@@ -1,27 +1,30 @@
-import openai
-from PIL import Image
-import requests
-from io import BytesIO
+import boto3
+from botocore.exceptions import ClientError
 
-# Set up your OpenAI API key
-openai.api_key = 'your-openai-api-key'
+MODEL_ID = "anthropic.claude-3-5-sonnet-20240620-v1:0"
 
-def analyze_image(image_path):
-    # Open the image file
-    with open(image_path, "rb") as image_file:
-        image_data = image_file.read()
+IMAGE_NAME = "AI Processes/image0.jpg"
 
-    # Send the image to the GPT-4V API
-    response = openai.Image.create(
-        model="gpt-4-vision",
-        file=image_data,
-        prompt="Analyze this image and determine if the baby is in a dangerous situation."
-    )
+bedrock_runtime = boto3.client("bedrock-runtime", region_name="us-east-1")
 
-    return response['choices'][0]['text'].strip()
+with open(IMAGE_NAME, "rb") as f:
+    image = f.read()
 
-if __name__ == "__main__":
-    image_path = 'path/to/your/baby_image.jpg'
-    danger_analysis = analyze_image(image_path)
+user_message = "Is this baby in danger? Give a danger level between 1-5. Output in JSON."
 
-    print(f"Danger Analysis: {danger_analysis}")
+messages = [
+    {
+        "role": "user",
+        "content": [
+            {"image": {"format": "png", "source": {"bytes": image}}},
+            {"text": user_message},
+        ],
+    }
+]
+
+response = bedrock_runtime.converse(
+    modelId=MODEL_ID,
+    messages=messages,
+)
+response_text = response["output"]["message"]["content"][0]["text"]
+print(response_text)
