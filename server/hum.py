@@ -3,7 +3,7 @@ import json
 import argparse
 import time
 
-# Replace <apiKey> with your HumeAI API key
+
 API_KEY = 'jzxNrIzPdz2FovYG4DkBj00fW2ijG6KHUa35Hdp8dDChHA2M'
 
 if __name__ == '__main__':
@@ -14,7 +14,6 @@ if __name__ == '__main__':
     image_path = args.image_path
 
     try:
-        # Send POST request to create a job
         print("Creating job...")
         with open(image_path, 'rb') as file:
             files = {
@@ -28,12 +27,11 @@ if __name__ == '__main__':
                 files=files
             )
 
-        # Print the response for debugging
         print("Response status code:", response.status_code)
         print("Response headers:", response.headers)
         print("Response text:", response.text)
 
-        # Check if the response is JSON
+
         if response.status_code == 200 and 'application/json' in response.headers.get('Content-Type', ''):
             response_data = response.json()
             if 'job_id' in response_data:
@@ -41,7 +39,7 @@ if __name__ == '__main__':
                 print(f"Job created with ID: {job_id}")
 
                 print("Waiting for job to complete...")
-                time.sleep(4)  # Wait for 30 seconds to allow job completion
+                time.sleep(4) 
 
                 # Fetch predictions from the job
                 url = f'https://api.hume.ai/v0/batch/jobs/{job_id}/predictions'
@@ -50,7 +48,7 @@ if __name__ == '__main__':
                 }
                 predictions_response = requests.get(url, headers=headers)
 
-                # Print predictions if successful
+
                 if predictions_response.status_code == 200:
                     predictions = predictions_response.json()
                     print(json.dumps(predictions, indent=2))
@@ -69,4 +67,3 @@ if __name__ == '__main__':
         print(e)
     except Exception as e:
         print(f"An error occurred: {e}")
-
