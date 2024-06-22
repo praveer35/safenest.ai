@@ -2,6 +2,7 @@ import socket
 import time
 import json
 import random
+import select
 
 # Initial values centered around typical baby vitals
 initial_bpm = 120
@@ -10,6 +11,9 @@ breathe_state = "Breathe in"
 
 current_bpm = initial_bpm
 current_temp = initial_temp
+
+vitals = []
+start_time = time.time()
 
 # Function to update vitals every 3 seconds
 def update_vitals():
@@ -23,18 +27,20 @@ def update_vitals():
     # Switch breathing state
     breathe_state = "Breathe out" if breathe_state == "Breathe in" else "Breathe in"
 
+    vitals.append([time.time() - start_time, current_bpm, current_temp])
+
 
 def handle_client(client_socket):
     try:
         while True:
             update_vitals()
-            vitals = {
-                "BPM": current_bpm,
-                "Temperature": current_temp,
-                "Breathing": breathe_state
-            }
-            client_socket.sendall(json.dumps(vitals).encode('utf-8'))
-            time.sleep(3)
+            #client_socket.sendall(json.dumps(vitals).encode('utf-8'))
+            ready = select.select([client_socket], [], [], 1)
+            #response = None
+            if ready[0]:
+                _ = client_socket.recv(4096)
+                client_socket.sendall(json.dumps(vitals).encode('utf-8'))
+            #time.sleep(1)
     except BrokenPipeError:
         print("Client disconnected")
     finally:
@@ -49,6 +55,7 @@ def start_server():
 
     while True:
         client_socket, addr = server.accept()
+        client_socket.setblocking(0)
         print(f"Accepted connection from {addr}")
         handle_client(client_socket)
 
