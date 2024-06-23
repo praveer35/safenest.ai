@@ -13,12 +13,8 @@ const SignUpPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/signup', { username, password, email });
-      if (response.data.success) {
-        navigate('/dashboard');
-      } else {
-        setError(response.data.message || 'Sign up failed');
-      }
+      const response = await axios.post('http://localhost:1601/signup', { username, password, email });
+      navigate('/dashboard');
     } catch (err) {
       setError('Sign up failed');
     }

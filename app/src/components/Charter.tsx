@@ -106,12 +106,8 @@ export const chartEvents: ReactGoogleChartEvent[] = [
           // );
           const value = dataTable?.getValue(row, column);
           try {
-            const response = await axios.post('http://localhost:5000/get-flag/' + row, {
-              row,
-              column,
-              value
-            });
-            alert("Server Response: " + response.data.text);
+            const response = await axios.get('http://localhost:1601/get-flag/' + row);
+            alert("Server Response: " + JSON.stringify(response.data));
           } catch (error) {
             console.error('Error fetching text from server:', error);
           }
@@ -167,7 +163,7 @@ const Charter: React.FC = () => {
 
     //fetchData(); // Initial fetch
 
-    const intervalId = setInterval(fetchData, 6000); // Fetch data every 5 seconds
+    const intervalId = setInterval(fetchData, 10000); // Fetch data every 5 seconds
 
     return () => clearInterval(intervalId); // Cleanup on unmount
   }, [vitalsErr, aiErr]);

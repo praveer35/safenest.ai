@@ -40,10 +40,24 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 ai_dangers_record = []
 frames = []
-seconds = 20
+seconds = 1
 
 img_ai_resp = dict()
 hume_resp = dict()
+
+@app.route('/signup', methods=['POST'])
+def signup():
+    data = request.json
+    flags_query.add_user(data['username'], data['password'], data['email'])
+    print('done')
+    return jsonify({'success'})
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.json
+    if flags_query.is_user(data['username'], data['password']):
+        return jsonify({'success': True})
+    return jsonify({'failure': True})
 
 @app.route('/vitals-data')
 def get_vitals_data():
@@ -73,27 +87,28 @@ def get_vitals_data():
         if (vitals[-1][1] > 120):
             description_temp += "High BPM"
             flags_query.insert_flag_table(str(int(vitals[-1][0])), "Heartbeat irregularity", "", -1, description_temp)
-            vitals[-1][3] = vitals[-1][1]
+            data[-1][3] = data[-1][1]
         elif (vitals[-1][1] < 110):
             description_temp += "Low BPM"
             flags_query.insert_flag_table(str(int(vitals[-1][0])), "Heartbeat irregularity", "", -1, description_temp)
-            vitals[-1][3] = vitals[-1][1]
+            data[-1][3] = data[-1][1]
         elif (vitals[-1][2] < 90):
             description_temp += "Low Temperature"
             flags_query.insert_flag_table(str(int(vitals[-1][0])), "Temperature irregularity", "", -1, description_temp)
-            vitals[-1][3] = vitals[-1][2]
+            data[-1][3] = data[-1][2]
         elif (vitals[-1][2] > 130):
             description_temp += "High Temperature"
             flags_query.insert_flag_table(str(int(vitals[-1][0])), "Temperature irregularity", "", -1, description_temp)
-            vitals[-1][3] = vitals[-1][2]
+            data[-1][3] = data[-1][2]
     
 
     err_seen = description_temp != ""
-    vitals[-1][3] = 100
+    # vitals[-1][3] = 100
 
 
 
     #print(data)
+    #print(vitals)
     return jsonify({'data': data, 'err': err_seen})
     #return data
 
@@ -101,6 +116,7 @@ def get_vitals_data():
 @app.route('/get-flag/<flag_time>', methods=['GET'])
 def get_flag_description(flag_time):
     flag_description = flags_query.get_description_by_flag_id(flag_time)
+    print(flag_description)
     return jsonify(flag_description)
 
 
@@ -141,9 +157,11 @@ def calculate_distress_index(emo):
     return 10 * sum_distress / 8
 
 def get_ai_opinions(current_frame, SECOND):
+    #print('SECOND = !!! = ' +SECOND)
+    #return [5]
     #return [SECOND+1, random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), -1000]
     if current_frame == None:
-        return [SECOND+1, -1000, -1000, -1000, -1000, -1000, -1000, -1000]
+        return [SECOND+1, 0, 0, 0, 0, 0, 0, -1000]
     response_text = None
     hume_distress = None
     if current_frame in img_ai_resp:
@@ -239,24 +257,24 @@ def get_ai_opinions(current_frame, SECOND):
 
         except requests.exceptions.RequestException as e:
             print(f"An error occurred with the request: {e}")
-            hume_distress = -1000
+            hume_distress = 0
         except KeyError as e:
             print(e)
-            hume_distress = -1000
+            hume_distress = 0
         except ValueError as e:
             print(e)
-            hume_distress = -1000
+            hume_distress = 0
         except Exception as e:
             print(f"An error occurred: {e}")
-            hume_distress = -1000
+            hume_distress = 0
         try:
             hume_distress = calculate_distress_index(predictions[0]['results']['predictions'][0]['models']['face']['grouped_predictions'][0]['predictions'][0]['emotions'])
         except:
-            hume_distress = -1000
+            hume_distress = 0
     try:
         res = json.loads(response_text)
     except:
-        return (SECOND+1, -1000, -1000, -1000, -1000, -1000, hume_distress, None)
+        return [SECOND+1, 0, 0, 0, 0, 0, hume_distress, -1000]
     description_temp = ""
     point_value = -1000
     if (res['choking'] >= 7):
@@ -279,29 +297,33 @@ def get_ai_opinions(current_frame, SECOND):
         description_temp += "Sharp object hazard"
         point_value = res['sharp_objects']
         flags_query.insert_flag_table(SECOND+1, description_temp, "", -1, res['rationale'])
-    return ((SECOND+1) * 1 if description_temp == "" else -1, res['choking'], res['electrical_shock'], res['hard_falling'], res['suffocation'], res['sharp_objects'], hume_distress, point_value)
+    return [(SECOND+1) * (1 if description_temp == "" else -1), 10*res['choking'], 10*res['electrical_shock'], 10*res['hard_falling'], 10*res['suffocation'], 10*res['sharp_objects'], 100*hume_distress, point_value]
     #return [current_frame, random.randint(50, 80), random.randint(50, 80), random.randint(50, 80)]
 
 @app.route('/ai-data')
 def get_ai_data():
     data = [["Time", "Choking Danger", "Shock Danger", "Falling Danger", "Suffocation Danger", "Sharp Danger", "Distress", "Point"], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1000]]
     err_seen = False
-
+    global seconds
+    
     for SECOND in range(seconds):
         # if exists(frame from 24*seconds --> 24*(seconds+1)) use frame
-        record = None if len(frames) == 0 else next((x for x in frames if x >= 24*SECOND and x <= 24*(SECOND+1)), None)
+        record = None if len(frames) == 0 else next((x for x in frames if x >= 240*SECOND and x <= 240*(SECOND+1)), None)
         print(record, frames)
         #record = None
         ai_opinion = get_ai_opinions(record, SECOND)
         if ai_opinion[0] < 0:
             ai_opinion[0] *= -1
             err_seen = True
+        print('ai opinion is ' + str(ai_opinion))
 
         #ai_opinion = None if record == None else get_ai_opinions(record)
         #avg_danger_level = None if record == None else (record[1] + record[2] + record[3]) / 3
         #data.append([float(SECOND), 0.0 if avg_danger_level == None else float(avg_danger_level), -1000.0])
 
         data.append(ai_opinion)
+    seconds += 1
+    print(data)
     return jsonify({'data': data, 'err': err_seen})
 
 # Supported video file extensions
@@ -413,7 +435,7 @@ def upload_file():
 
 @app.route('/upload-test', methods=['GET'])
 def upload_file_test():
-    filename = '../app/testvid.mp4'
+    filename = '0623.mp4'
     global ai_dangers_record
     ai_dangers_record = extract_key_frames(filename, 5, 500)
 

@@ -12,7 +12,7 @@ const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/login', { username, password });
+      const response = await axios.post('http://localhost:1601/login', { username, password });
       if (response.data.success) {
         navigate('/dashboard');
       } else {

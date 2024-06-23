@@ -33,7 +33,7 @@ def update_data():
         breathe_state = "Breathe out" if breathe_state == "Breathe in" else "Breathe in"
 
         vitals.append([int(round(time.time() - start_time)), current_bpm, current_temp, -1000])
-        time.sleep(6)
+        time.sleep(10)
 
 @app.route('/restart-data', methods=['GET'])
 def restart_data():
