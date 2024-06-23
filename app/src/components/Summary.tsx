@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import './Dashboard.css'; // Reusing the existing Dashboard CSS
+import './Summary.css'; // Reusing the existing Dashboard CSS
 import { useNavigate } from 'react-router-dom';
 
 const Summary: React.FC = () => {
