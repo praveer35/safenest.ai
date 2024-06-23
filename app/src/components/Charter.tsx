@@ -91,7 +91,7 @@ export const aiOptions = {
 export const chartEvents: ReactGoogleChartEvent[] = [
   {
     eventName: "select",
-    callback: ({ chartWrapper }) => {
+    callback: async ({ chartWrapper }) => {
       const chart = chartWrapper.getChart();
       const selection = chart.getSelection();
       if (selection.length === 1) {
@@ -99,11 +99,22 @@ export const chartEvents: ReactGoogleChartEvent[] = [
         const dataTable = chartWrapper.getDataTable();
         const { row, column } = selectedItem;
         if (column === 3) {
-          alert("You selected:" + 
-            row + " " +
-            column + " " +
-            dataTable?.getValue(row, column)
-          );
+          // alert("You selected:" + 
+          //   row + " " +
+          //   column + " " +
+          //   dataTable?.getValue(row, column)
+          // );
+          const value = dataTable?.getValue(row, column);
+          try {
+            const response = await axios.post('http://localhost:5000/get-flag/' + row, {
+              row,
+              column,
+              value
+            });
+            alert("Server Response: " + response.data.text);
+          } catch (error) {
+            console.error('Error fetching text from server:', error);
+          }
         }
       }
     },
@@ -112,7 +123,9 @@ export const chartEvents: ReactGoogleChartEvent[] = [
 
 const Charter: React.FC = () => {
   const [vitalsData, setVitalsData] = useState<any[]>([]);
+  const [vitalsErr, setVitalsErr] = useState<any>(null);
   const [aiData, setAIData] = useState<any[]>([]);
+  const [aiErr, setAIErr] = useState<any>(null);
 
   // useEffect(() => {
   //   fetch('http://127.0.0.1:1601/data')
@@ -126,16 +139,27 @@ const Charter: React.FC = () => {
       try {
         const response = await axios.get('http://localhost:1601/vitals-data');
         //alert(response.data);
-        setVitalsData(response.data);
+        //alert('Data: ' + JSON.stringify(response.data.data));
+        //alert('Error: ' + JSON.stringify(response.data.err));
+        setVitalsData(response.data.data);
+        setVitalsErr(response.data.err);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
       try {
         const response = await axios.get('http://localhost:1601/ai-data');
-        //alert(response.data);
-        setAIData(response.data);
+    
+        // Alert the data and err separately
+        //alert('Data: ' + JSON.stringify(response.data.data));
+        //alert('Error: ' + JSON.stringify(response.data.err));
+        setAIData(response.data.data);
+        setAIErr(response.data.err);
+        //alert('aierr=' + aiErr);
       } catch(error) {
         console.error('Error fetching data:', error);
+      }
+      if (vitalsErr && aiErr) {
+        alert("Baby in danger! Vitals are unusual and AI has detected unusual behavior. Check now.");
       }
     };
 
@@ -143,10 +167,10 @@ const Charter: React.FC = () => {
 
     //fetchData(); // Initial fetch
 
-    const intervalId = setInterval(fetchData, 1000); // Fetch data every 5 seconds
+    const intervalId = setInterval(fetchData, 6000); // Fetch data every 5 seconds
 
     return () => clearInterval(intervalId); // Cleanup on unmount
-  }, []);
+  }, [vitalsErr, aiErr]);
 
   return (
     <div>

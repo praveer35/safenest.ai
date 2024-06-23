@@ -32,13 +32,8 @@ def update_data():
         # Switch breathing state
         breathe_state = "Breathe out" if breathe_state == "Breathe in" else "Breathe in"
 
-        if random.randint(0, 9) == 0: # FLAG
-            #RECORD_FLAG('suffocation', 'description', timestamp)
-            #requests.post('/RECORD_FLAG', )
-            vitals.append([int(round(time.time() - start_time)), current_bpm, current_temp, current_bpm])
-        else:
-            vitals.append([int(round(time.time() - start_time)), current_bpm, current_temp, None])
-        time.sleep(1)
+        vitals.append([int(round(time.time() - start_time)), current_bpm, current_temp, -1000])
+        time.sleep(6)
 
 @app.route('/restart-data', methods=['GET'])
 def restart_data():

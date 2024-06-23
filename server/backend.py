@@ -69,23 +69,67 @@ def get_vitals_data():
     ]
 
     description_temp = ""
-    if (vitals[-1][1] > 150):
-        description_temp += "High BPM"
-    if (vitals[-1][1] < 110):
-        description_temp += "Low BPM"
-    if (vitals[-1][2] < 60):
-        description_temp += "Low Temperature"
-    if (vitals[-1][2] > 130):
-        description_temp += "High Temperature"
+    if len(vitals) > 0:
+        if (vitals[-1][1] > 120):
+            description_temp += "High BPM"
+            flags_query.insert_flag_table(str(int(vitals[-1][0])), "Heartbeat irregularity", "", -1, description_temp)
+            vitals[-1][3] = vitals[-1][1]
+        elif (vitals[-1][1] < 110):
+            description_temp += "Low BPM"
+            flags_query.insert_flag_table(str(int(vitals[-1][0])), "Heartbeat irregularity", "", -1, description_temp)
+            vitals[-1][3] = vitals[-1][1]
+        elif (vitals[-1][2] < 90):
+            description_temp += "Low Temperature"
+            flags_query.insert_flag_table(str(int(vitals[-1][0])), "Temperature irregularity", "", -1, description_temp)
+            vitals[-1][3] = vitals[-1][2]
+        elif (vitals[-1][2] > 130):
+            description_temp += "High Temperature"
+            flags_query.insert_flag_table(str(int(vitals[-1][0])), "Temperature irregularity", "", -1, description_temp)
+            vitals[-1][3] = vitals[-1][2]
+    
 
-    if description_temp != "":
-        flags_query.insert_flag_table(str(int(vitals[-1][0])), "Vitals", "", -1, description_temp)
+    err_seen = description_temp != ""
+    vitals[-1][3] = 100
 
 
 
     #print(data)
-    return jsonify(data)
+    return jsonify({'data': data, 'err': err_seen})
     #return data
+
+
+@app.route('/get-flag/<flag_time>', methods=['GET'])
+def get_flag_description(flag_time):
+    flag_description = flags_query.get_description_by_flag_id(flag_time)
+    return jsonify(flag_description)
+
+
+@app.route('/summary', methods=['GET'])
+def get_script():
+    top_3_flag_types = flags_query.get_top_3_flag_types()
+    while len(top_3_flag_types) < 3:
+        top_3_flag_types.append(('', 0))
+    print(top_3_flag_types)
+    script = 'Watch out for ' + top_3_flag_types[0][0] + ', ' + top_3_flag_types[1][0] + ', ' + top_3_flag_types[2][0] + '.\n\n'
+    ml_prompt = f'Given {top_3_flag_types[0][0]}, {top_3_flag_types[1][0]}, {top_3_flag_types[2][0]}, write a paragraph explaining how the parent can keep their kids safe.'
+    print(ml_prompt)
+
+    messages = [
+        {
+            "role": "user",
+            "content": [
+                {"text": ml_prompt}
+            ],
+        }
+    ]
+
+    response = bedrock_runtime.converse(
+        modelId=MODEL_ID,
+        messages=messages,
+    )
+    script += response["output"]["message"]["content"][0]["text"]
+    return jsonify({'script': script})
+
 
 def calculate_distress_index(emo):
     sum_distress = 0.0
@@ -97,7 +141,7 @@ def calculate_distress_index(emo):
     return 10 * sum_distress / 8
 
 def get_ai_opinions(current_frame, SECOND):
-    return [SECOND+1, random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), -1000]
+    #return [SECOND+1, random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), -1000]
     if current_frame == None:
         return [SECOND+1, -1000, -1000, -1000, -1000, -1000, -1000, -1000]
     response_text = None
@@ -213,12 +257,35 @@ def get_ai_opinions(current_frame, SECOND):
         res = json.loads(response_text)
     except:
         return (SECOND+1, -1000, -1000, -1000, -1000, -1000, hume_distress, None)
-    return (SECOND+1, res['choking'], res['electrical_shock'], res['hard_falling'], res['suffocation'], res['sharp_objects'], hume_distress, None)
+    description_temp = ""
+    point_value = -1000
+    if (res['choking'] >= 7):
+        description_temp += "Choking hazard"
+        point_value = res['choking']
+        flags_query.insert_flag_table(SECOND+1, description_temp, "", -1, res['rationale'])
+    elif (res['electrical_shock'] >= 7):
+        description_temp += "Electrical hazard"
+        point_value = res['electrical_shock']
+        flags_query.insert_flag_table(SECOND+1, description_temp, "", -1, res['rationale'])
+    elif (res['hard_falling'] >= 7):
+        description_temp += "Falling hazard"
+        point_value = res['hard_falling']
+        flags_query.insert_flag_table(SECOND+1, description_temp, "", -1, res['rationale'])
+    elif (res['suffocation'] >= 7):
+        description_temp += "Suffocation hazard"
+        point_value = res['suffocation']
+        flags_query.insert_flag_table(SECOND+1, description_temp, "", -1, res['rationale'])
+    elif (res['sharp_objects'] >= 7):
+        description_temp += "Sharp object hazard"
+        point_value = res['sharp_objects']
+        flags_query.insert_flag_table(SECOND+1, description_temp, "", -1, res['rationale'])
+    return ((SECOND+1) * 1 if description_temp == "" else -1, res['choking'], res['electrical_shock'], res['hard_falling'], res['suffocation'], res['sharp_objects'], hume_distress, point_value)
     #return [current_frame, random.randint(50, 80), random.randint(50, 80), random.randint(50, 80)]
 
 @app.route('/ai-data')
 def get_ai_data():
     data = [["Time", "Choking Danger", "Shock Danger", "Falling Danger", "Suffocation Danger", "Sharp Danger", "Distress", "Point"], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1000]]
+    err_seen = False
 
     for SECOND in range(seconds):
         # if exists(frame from 24*seconds --> 24*(seconds+1)) use frame
@@ -226,11 +293,16 @@ def get_ai_data():
         print(record, frames)
         #record = None
         ai_opinion = get_ai_opinions(record, SECOND)
+        if ai_opinion[0] < 0:
+            ai_opinion[0] *= -1
+            err_seen = True
+
         #ai_opinion = None if record == None else get_ai_opinions(record)
         #avg_danger_level = None if record == None else (record[1] + record[2] + record[3]) / 3
         #data.append([float(SECOND), 0.0 if avg_danger_level == None else float(avg_danger_level), -1000.0])
+
         data.append(ai_opinion)
-    return jsonify(data)
+    return jsonify({'data': data, 'err': err_seen})
 
 # Supported video file extensions
 
