@@ -38,7 +38,7 @@ def update_data():
             vitals.append([int(round(time.time() - start_time)), current_bpm, current_temp, current_bpm])
         else:
             vitals.append([int(round(time.time() - start_time)), current_bpm, current_temp, None])
-        time.sleep(5)
+        time.sleep(1)
 
 @app.route('/restart-data', methods=['GET'])
 def restart_data():

@@ -143,7 +143,7 @@ const Charter: React.FC = () => {
 
     //fetchData(); // Initial fetch
 
-    const intervalId = setInterval(fetchData, 5000); // Fetch data every 5 seconds
+    const intervalId = setInterval(fetchData, 1000); // Fetch data every 5 seconds
 
     return () => clearInterval(intervalId); // Cleanup on unmount
   }, []);

@@ -79,7 +79,9 @@ def calculate_distress_index(emo):
     return 10 * sum_distress / 8
 
 def get_ai_opinions(current_frame, SECOND):
-    #return [SECOND+1, random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), -1000]
+    return [SECOND+1, random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), -1000]
+    if current_frame == None:
+        return [SECOND+1, -1000, -1000, -1000, -1000, -1000, -1000, -1000]
     response_text = None
     hume_distress = None
     if current_frame in img_ai_resp:
@@ -203,7 +205,7 @@ def get_ai_data():
     for SECOND in range(seconds):
         # if exists(frame from 24*seconds --> 24*(seconds+1)) use frame
         record = None if len(frames) == 0 else next((x for x in frames if x >= 24*SECOND and x <= 24*(SECOND+1)), None)
-        print(record)
+        print(record, frames)
         #record = None
         ai_opinion = get_ai_opinions(record, SECOND)
         #ai_opinion = None if record == None else get_ai_opinions(record)
@@ -305,6 +307,8 @@ def upload_file():
         return jsonify({'error': 'No selected file'}), 400
     file.save(os.path.join(UPLOAD_FOLDER, file.filename))
     print(os.path.join(UPLOAD_FOLDER, file.filename))
+    global frames
+    frames = []
     global ai_dangers_record
     ai_dangers_record = extract_key_frames(os.path.join(UPLOAD_FOLDER, file.filename), 5, 500)
     print(ai_dangers_record)
@@ -312,8 +316,6 @@ def upload_file():
     img_ai_resp = dict()
     global hume_resp
     hume_resp = dict()
-    global frames
-    frames = []
     response = requests.get('http://localhost:9999/restart-data')
     if (response.json() != 'success'): print('err')
     #response = requests.post('http://localhost:9998/start-data/', data=jsonify(ai_dangers))
