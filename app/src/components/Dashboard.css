@@ -10,9 +10,9 @@ body {
 .dashboard-page {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  background-color: #1a1a2e;
-  color: #fff; /* White color for the text */
+  min-height: 100vh; /* Use min-height to ensure it covers the full screen */
+  background-color: #1a1a2e; /* Consistent background color */
+  color: #fff;
 }
 
 .navbar {
@@ -71,12 +71,13 @@ body {
 }
 
 .dashboard-content {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start; /* Adjusted alignment */
-  padding-top: 4.25rem; /* Adjusted padding for navbar height */
-}
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 4.25rem;
+    background-color: #1a1a2e; /* Consistent background color */
+  }
 
 .video-upload {
   max-width: 600px;
