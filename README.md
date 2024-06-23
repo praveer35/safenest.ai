@@ -1,2 +1,2 @@
-# babyai
+# safenest.ai
 Baby AI hackathon
