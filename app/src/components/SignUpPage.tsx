@@ -1,25 +1,26 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './LoginPage.css';
+import './LoginPage.css'; // Reuse the same CSS
 
-const LoginPage: React.FC = () => {
+const SignUpPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/login', { username, password });
+      const response = await axios.post('http://localhost:5000/signup', { username, password, email });
       if (response.data.success) {
         navigate('/dashboard');
       } else {
-        setError('Invalid credentials');
+        setError(response.data.message || 'Sign up failed');
       }
     } catch (err) {
-      setError('Invalid credentials');
+      setError('Sign up failed');
     }
   };
 
@@ -28,7 +29,7 @@ const LoginPage: React.FC = () => {
       <form onSubmit={handleSubmit} className="login-form">
         <h1>Safenest.AI</h1>
         <p className="message">Monitor your baby using AI Power</p>
-        <h2>Log In</h2>
+        <h2>Sign Up</h2>
         {error && <p className="error">{error}</p>}
         <div>
           <label>Username:</label>
@@ -36,6 +37,15 @@ const LoginPage: React.FC = () => {
             type="text"
             value={username}
             onChange={e => setUsername(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label>Email:</label>
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
             required
           />
         </div>
@@ -48,11 +58,11 @@ const LoginPage: React.FC = () => {
             required
           />
         </div>
-        <button type="submit">Log In</button>
-        <a href="/signup" className="signup-link">Don't have an account? Sign up</a>
+        <button type="submit">Sign Up</button>
+        <a href="/" className="signup-link">Already have an account? Log in</a>
       </form>
     </div>
   );
 };
 
-export default LoginPage;
+export default SignUpPage;
