@@ -8,17 +8,17 @@ body {
 }
 
 .dashboard-page {
+  display: flex;
+  flex-direction: column;
   height: 100vh;
   background-color: #1a1a2e;
   color: #fff; /* White color for the text */
-  display: flex;
-  flex-direction: column;
 }
 
 .navbar {
   display: flex;
   align-items: center;
-  width: 100%; /* Full width */
+  width: 100%;
   max-width: calc(100vw - 2.5rem); /* Ensures navbar doesn't exceed viewport width minus padding */
   height: 4.25rem; /* Reduced height */
   padding: 0 1.25rem; /* Adjusted padding */
@@ -36,11 +36,13 @@ body {
 }
 
 .dashboard-title {
-  color: #1a1a2e; /* Navy blue color for dashboard title */
-  font-family: 'Montserrat', sans-serif; /* Using Montserrat for SafeNet.AI */
-  font-weight: 600;
-  font-size: 1.6rem; /* Adjusted font size */
-}
+    color: #1a1a2e; /* Navy blue color for dashboard title */
+    font-family: 'Montserrat', sans-serif; /* Using Montserrat for SafeNet.AI */
+    font-weight: 600;
+    font-size: 1.6rem; /* Adjusted font size */
+    margin-left: 2rem; /* Added margin to move the text to the right */
+  }
+  
 
 .navbar-center {
   flex: 1; /* Takes up remaining space */
@@ -72,6 +74,55 @@ body {
   flex: 1;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start; /* Adjusted alignment */
   padding-top: 4.25rem; /* Adjusted padding for navbar height */
+}
+
+.video-upload {
+  max-width: 600px;
+  width: 100%; /* Full width within the max-width constraint */
+  margin-top: 2rem; /* Added top margin */
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: #000; /* Adjusted text color to black */
+  text-align: center; /* Center aligning the content */
+}
+
+.upload-form {
+  margin-bottom: 1rem;
+}
+
+.upload-form input[type='file'] {
+  margin-right: 1rem;
+}
+
+.upload-form button {
+  padding: 0.75rem 1.5rem;
+  background-color: #1a1a2e;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.upload-form button:hover {
+  background-color: #162b4b;
+}
+
+.video-upload p {
+  margin-top: 1rem;
+}
+
+/* Media query for responsiveness */
+@media (max-width: 768px) {
+  .dashboard-title {
+    font-size: 1.2rem; /* Adjusted font size for smaller screens */
+  }
+
+  .project-name {
+    font-size: 1rem; /* Adjusted font size for smaller screens */
+  }
 }

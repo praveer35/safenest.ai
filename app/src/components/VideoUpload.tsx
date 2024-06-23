@@ -45,7 +45,10 @@ const VideoUpload: React.FC = () => {
     <div className="video-upload">
       <h2>Upload a Video</h2>
       <form onSubmit={handleSubmit} className="upload-form">
-        <input type="file" accept="video/*" onChange={handleFileChange} />
+        <label className="file-label">
+          Choose a file:
+          <input type="file" accept="video/*" onChange={handleFileChange} />
+        </label>
         <button type="submit">Upload</button>
       </form>
       {uploadStatus && <p>{uploadStatus}</p>}
