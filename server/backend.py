@@ -41,6 +41,7 @@ frames = []
 seconds = 20
 
 img_ai_resp = dict()
+hume_resp = dict()
 
 @app.route('/vitals-data')
 def get_vitals_data():
@@ -69,11 +70,18 @@ def get_vitals_data():
     #return data
 
 def calculate_distress_index(emo):
-    return (emo['Anger'] + emo['Anxiety'] + emo['Confusion'] + (emo['Distress'] + emo['Fear'] + emo['Horror'])*2 + emo['Pain'] + emo['Surprise (negative)']) / 8
+    sum_distress = 0.0
+    for e in emo:
+        if e['name'] == 'Anger' or e['name'] == 'Anxiety' or e['name'] == 'Confusion' or e['name'] == 'Pain' or e['name'] == 'Surprise (negative)':
+            sum_distress += e['score']
+        elif e['name'] == 'Distress' or e['name'] == 'Fear' or e['name'] == 'Horror':
+            sum_distress += e['score'] * 2
+    return 10 * sum_distress / 8
 
-def get_ai_opinions(current_frame):
-    return [current_frame, random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), -1000]
+def get_ai_opinions(current_frame, SECOND):
+    #return [SECOND+1, random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), random.randint(50, 80), -1000]
     response_text = None
+    hume_distress = None
     if current_frame in img_ai_resp:
         response_text = img_ai_resp[current_frame]
     else:
@@ -112,90 +120,92 @@ def get_ai_opinions(current_frame):
         img_ai_resp[current_frame] = response_text
     print(response_text)
 
-    image_path = os.path.join('opencv', f'frame{current_frame}.jpg')
-    API_KEY = 'jzxNrIzPdz2FovYG4DkBj00fW2ijG6KHUa35Hdp8dDChHA2M'
-    hume_distress = None
+    if current_frame in hume_resp:
+        hume_distress = hume_resp[current_frame]
+    else:
+        image_path = os.path.join('opencv', f'frame{current_frame}.jpg')
+        API_KEY = 'jzxNrIzPdz2FovYG4DkBj00fW2ijG6KHUa35Hdp8dDChHA2M'
 
-    try:
-        print("Creating job...")
-        with open(image_path, 'rb') as file:
-            files = {
-                'file': (image_path, file, 'image/png')
-            }
-            response = requests.post(
-                "https://api.hume.ai/v0/batch/jobs",
-                headers={
-                    "X-Hume-Api-Key": API_KEY
-                },
-                files=files
-            )
-
-        print("Response status code:", response.status_code)
-        print("Response headers:", response.headers)
-        print("Response text:", response.text)
-
-
-        if response.status_code == 200 and 'application/json' in response.headers.get('Content-Type', ''):
-            response_data = response.json()
-            if 'job_id' in response_data:
-                job_id = response_data['job_id']
-                print(f"Job created with ID: {job_id}")
-
-                print("Waiting for job to complete...")
-                time.sleep(4) 
-
-                # Fetch predictions from the job
-                url = f'https://api.hume.ai/v0/batch/jobs/{job_id}/predictions'
-                headers = {
-                    'X-Hume-Api-Key': API_KEY
+        try:
+            print("Creating job...")
+            with open(image_path, 'rb') as file:
+                files = {
+                    'file': (image_path, file, 'image/png')
                 }
-                predictions_response = requests.get(url, headers=headers)
+                response = requests.post(
+                    "https://api.hume.ai/v0/batch/jobs",
+                    headers={
+                        "X-Hume-Api-Key": API_KEY
+                    },
+                    files=files
+                )
+
+            print("Response status code:", response.status_code)
+            print("Response headers:", response.headers)
+            print("Response text:", response.text)
 
 
-                if predictions_response.status_code == 200:
-                    predictions = predictions_response.json()
-                    print(json.dumps(predictions, indent=2))
+            if response.status_code == 200 and 'application/json' in response.headers.get('Content-Type', ''):
+                response_data = response.json()
+                if 'job_id' in response_data:
+                    job_id = response_data['job_id']
+                    print(f"Job created with ID: {job_id}")
+
+                    print("Waiting for job to complete...")
+                    time.sleep(4) 
+
+                    # Fetch predictions from the job
+                    url = f'https://api.hume.ai/v0/batch/jobs/{job_id}/predictions'
+                    headers = {
+                        'X-Hume-Api-Key': API_KEY
+                    }
+                    predictions_response = requests.get(url, headers=headers)
+
+
+                    if predictions_response.status_code == 200:
+                        predictions = predictions_response.json()
+                        print(json.dumps(predictions, indent=2))
+                    else:
+                        print(f"Failed to fetch predictions. Status code: {predictions_response.status_code}")
+                        hume_distress = -1000
                 else:
-                    print(f"Failed to fetch predictions. Status code: {predictions_response.status_code}")
-                    hume_distress = -1000
+                    raise KeyError(f"Job ID not found in response: {response_data}")
             else:
-                raise KeyError(f"Job ID not found in response: {response_data}")
-        else:
-            raise ValueError(f"Unexpected response format or status: {response.status_code}, {response.text}")
+                raise ValueError(f"Unexpected response format or status: {response.status_code}, {response.text}")
 
-    except requests.exceptions.RequestException as e:
-        print(f"An error occurred with the request: {e}")
-        hume_distress = -1000
-    except KeyError as e:
-        print(e)
-        hume_distress = -1000
-    except ValueError as e:
-        print(e)
-        hume_distress = -1000
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        hume_distress = -1000
-    try:
-        hume_distress = calculate_distress_index(predictions[0]['results']['predictions']['models']['face']['grouped_predictions']['predictions']['emotions'])
-    except:
-        hume_distress = -1000
+        except requests.exceptions.RequestException as e:
+            print(f"An error occurred with the request: {e}")
+            hume_distress = -1000
+        except KeyError as e:
+            print(e)
+            hume_distress = -1000
+        except ValueError as e:
+            print(e)
+            hume_distress = -1000
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            hume_distress = -1000
+        try:
+            hume_distress = calculate_distress_index(predictions[0]['results']['predictions'][0]['models']['face']['grouped_predictions'][0]['predictions'][0]['emotions'])
+        except:
+            hume_distress = -1000
     try:
         res = json.loads(response_text)
     except:
-        return (current_frame, -1000, -1000, -1000, -1000, -1000, hume_distress, None)
-    return (current_frame, res['choking'], res['electrical_shock'], res['hard_falling'], res['suffocation'], res['sharp_objects'], hume_distress, None)
+        return (SECOND+1, -1000, -1000, -1000, -1000, -1000, hume_distress, None)
+    return (SECOND+1, res['choking'], res['electrical_shock'], res['hard_falling'], res['suffocation'], res['sharp_objects'], hume_distress, None)
     #return [current_frame, random.randint(50, 80), random.randint(50, 80), random.randint(50, 80)]
 
 @app.route('/ai-data')
 def get_ai_data():
-    data = [["Time", "Choking Danger", "Shock Danger", "Falling Danger", "Suffocation Danger", "Sharp Danger", "Point"], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1000]]
+    data = [["Time", "Choking Danger", "Shock Danger", "Falling Danger", "Suffocation Danger", "Sharp Danger", "Distress", "Point"], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1000]]
 
     for SECOND in range(seconds):
         # if exists(frame from 24*seconds --> 24*(seconds+1)) use frame
         record = None if len(frames) == 0 else next((x for x in frames if x >= 24*SECOND and x <= 24*(SECOND+1)), None)
         print(record)
         #record = None
-        ai_opinion = get_ai_opinions(record)
+        ai_opinion = get_ai_opinions(record, SECOND)
         #ai_opinion = None if record == None else get_ai_opinions(record)
         #avg_danger_level = None if record == None else (record[1] + record[2] + record[3]) / 3
         #data.append([float(SECOND), 0.0 if avg_danger_level == None else float(avg_danger_level), -1000.0])
@@ -300,6 +310,8 @@ def upload_file():
     print(ai_dangers_record)
     global img_ai_resp
     img_ai_resp = dict()
+    global hume_resp
+    hume_resp = dict()
     global frames
     frames = []
     response = requests.get('http://localhost:9999/restart-data')

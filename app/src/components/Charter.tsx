@@ -63,6 +63,24 @@ export const aiOptions = {
       curveType: "function"
     },
     1: {
+      curveType: "function"
+    },
+    2: {
+      curveType: "function"
+    },
+    3: {
+      curveType: "function"
+    },
+    4: {
+      curveType: "function"
+    },
+    5: {
+      curveType: "function"
+    },
+    6: {
+      curveType: "function"
+    },
+    7: {
       type: "scatter",
       visibleInLegend: false
     }
@@ -115,16 +133,7 @@ const Charter: React.FC = () => {
       try {
         const response = await axios.get('http://localhost:1601/ai-data');
         //alert(response.data);
-        let newResponse = [];
-        newResponse.push(response.data[0]);
-        for (let i = 1; i < response.data.length; i++) {
-          newResponse.push([parseFloat(response.data[0]), parseFloat(response.data[1]), null]);
-        }
-        newResponse = [["A", "B", "C", "D", "E", "F", "G", "H"], [1, 3, 4, 1, 3, 4, 1, 3], [2, 6, 4, 2, 6, 4, 2, 6], [3, 1, 4, 3, 1, 4, 3, 1]]
-        //alert(response.data);
-        //alert(newResponse);
-        //setAIData(response.data);
-        setAIData(newResponse);
+        setAIData(response.data);
       } catch(error) {
         console.error('Error fetching data:', error);
       }
