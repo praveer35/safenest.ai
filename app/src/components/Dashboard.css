@@ -1,97 +1,146 @@
-import React, { useState } from 'react';
-import './Dashboard.css';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import Charter from './Charter';
-
-const Dashboard: React.FC = () => {
-  const navigate = useNavigate();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploadStatus, setUploadStatus] = useState<string>('');
-  const [isUploadSuccessful, setIsUploadSuccessful] = useState<boolean>(false);
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files.length > 0) {
-      setSelectedFile(event.target.files[0]);
-    }
-  };
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!selectedFile) {
-      setUploadStatus('Please select a file first.');
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('video', selectedFile);
-
-    try {
-      const response = await axios.post('http://localhost:1601/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      if (response.status === 200) {
-        setUploadStatus('File uploaded successfully.');
-        setIsUploadSuccessful(true);
-      }
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      setUploadStatus('Error uploading file.');
-      setIsUploadSuccessful(false);
-    }
-  };
-
-  const handleLogout = () => {
-    navigate('/');
-  };
-
-  return (
-    <div className="dashboard-page">
-      <nav className="navbar">
-        <div className="navbar-left">
-          <span className="project-name">SafeNet.AI</span>
-        </div>
-        <div className="navbar-center">
-          <span className="dashboard-title">Dashboard</span>
-        </div>
-        <div className="navbar-right">
-          <button className="navbar-button" onClick={() => navigate('/summary')}>
-            Summary
-          </button>
-          <button className="navbar-button" onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
-      </nav>
-      <div className="dashboard-content">
-        <div className="video-upload">
-          <h2>Upload a Video</h2>
-          <p>Import live footage of your baby to be alerted of potential dangers.</p>
-          <form onSubmit={handleSubmit} className="upload-form">
-            <label className="file-label">
-              Choose a File
-              <input type="file" accept="video/*" onChange={handleFileChange} />
-            </label>
-            {selectedFile && (
-              <div className="file-info">
-                <span className="file-name">{selectedFile.name}</span>
-              </div>
-            )}
-            <button type="submit" className="upload-button">Upload</button>
-          </form>
-          {uploadStatus && <p>{uploadStatus}</p>}
-          {isUploadSuccessful && (
-            <div className="graphs">
-              <Charter />
-              {/* <Charter /> */}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default Dashboard;
+.video-upload {
+    max-width: 600px;
+    width: 100%; /* Full width within the max-width constraint */
+    margin: 2rem auto; /* Centering the upload component */
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    color: #000; /* Adjusted text color to black */
+    text-align: center; /* Center aligning the content */
+  }
+  
+  .upload-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center aligns form elements */
+    margin-top: 1rem; /* Added top margin */
+  }
+  
+  .upload-form .file-label {
+    position: relative;
+    display: flex; /* Change to flex to align input and label in a row */
+    align-items: center; /* Center vertically */
+    padding: 0.5rem 1rem; /* Adjusted padding */
+    background-color: #1a1a2e;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-bottom: 1rem; /* Added margin to separate elements */
+  }
+  
+  .upload-form .file-label:hover {
+    background-color: #162b4b;
+  }
+  
+  .upload-form .file-label input[type='file'] {
+    display: none; /* Hide the default file input */
+  }
+  
+  .file-info {
+    margin-left: 1rem; /* Adjust spacing between button and file name */
+  }
+  
+  .file-name {
+    font-size: 0.9rem; /* Adjusted font size */
+    color: #333;
+  }
+  
+  .upload-form button {
+    padding: 0.75rem 1.5rem; /* Original padding for the Upload button */
+    background-color: #1a1a2e;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 0.5rem; /* Adjusted margin */
+  }
+  
+  .upload-form button:hover {
+    background-color: #162b4b;
+  }
+  
+  .upload-button {
+    padding: 0.5rem 1rem; /* Adjusted padding for the Choose a File button */
+  }
+  
+  .video-upload p {
+    margin-top: 1rem;
+    font-size: 1.1rem; /* Adjusted font size for better readability */
+    color: #333; /* Slightly darker color for better contrast */
+  }
+  
+  .dashboard-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Use min-height to ensure it covers the full screen */
+    background-color: #1a1a2e; /* Consistent background color */
+    color: #fff;
+  }
+  
+  .navbar {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: calc(100vw - 2.5rem); /* Ensures navbar doesn't exceed viewport width minus padding */
+    height: 4.25rem; /* Reduced height */
+    padding: 0 1.25rem; /* Adjusted padding */
+    background-color: #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    z-index: 2; /* Ensure the navbar is on top */
+  }
+  
+  .project-name {
+    color: #000; /* Black color for project name */
+    font-size: 1.2rem; /* Adjusted font size */
+    margin-left: 1rem; /* Adjusted margin */
+  }
+  
+  .dashboard-title {
+    color: #1a1a2e; /* Navy blue color for dashboard title */
+    font-family: 'Montserrat', sans-serif; /* Using Montserrat for SafeNet.AI */
+    font-weight: 600;
+    font-size: 1.6rem; /* Adjusted font size */
+    margin-left: 2rem; /* Added margin to move the text to the right */
+  }
+  
+  .navbar-center {
+    flex: 1; /* Takes up remaining space */
+    display: flex;
+    justify-content: center;
+  }
+  
+  .navbar-right {
+    display: flex;
+    gap: 1rem;
+    margin-left: auto; /* Pushes buttons to the right */
+  }
+  
+  .navbar-button {
+    background: none;
+    border: none;
+    color: #000; /* Black color for buttons */
+    font-size: 1rem; /* Adjusted font size */
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s; /* Transition for background and text color */
+  }
+  
+  .navbar-button:hover {
+    background-color: #f0f0f0; /* Light background color on hover */
+    color: #1a1a2e; /* Navy blue text color on hover */
+  }
+  
+  .dashboard-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 4.25rem;
+    background-color: #1a1a2e; /* Consistent background color */
+  }
+  
