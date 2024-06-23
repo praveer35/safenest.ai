@@ -14,6 +14,8 @@ import json
 from xml.dom.minidom import parseString
 from botocore.exceptions import ClientError
 
+import flags_query
+
 MODEL_ID = "anthropic.claude-3-5-sonnet-20240620-v1:0"
 IMAGE_NAME = "baby.png"
 
