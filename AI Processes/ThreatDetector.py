@@ -53,7 +53,7 @@ response = bedrock_runtime.converse(
     modelId=MODEL_ID,
     messages=messages,
 )
-response_text = response["output"]["message"]["content"][0]["text"]
+response_text = type(response["output"]["message"]["content"][0]["text"])
 print(response_text)
 
 
