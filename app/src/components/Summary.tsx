@@ -1,12 +1,12 @@
 import React from 'react';
-import './Dashboard.css';
+import './Dashboard.css'; // Reusing the existing Dashboard CSS
+
 import { useNavigate } from 'react-router-dom';
 
-const Dashboard: React.FC = () => {
+const Summary: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Perform any logout logic here, then navigate to login page
     navigate('/');
   };
 
@@ -17,11 +17,11 @@ const Dashboard: React.FC = () => {
           <span className="project-name">SafeNet.AI</span>
         </div>
         <div className="navbar-center">
-          <span className="dashboard-title">Dashboard</span>
+          <span className="dashboard-title"><strong>Summary</strong></span>
         </div>
         <div className="navbar-right">
-          <button className="navbar-button" onClick={() => navigate('/summary')}>
-            Summary
+          <button className="navbar-button" onClick={() => navigate('/dashboard')}>
+            Dashboard
           </button>
           <button className="navbar-button" onClick={handleLogout}>
             Logout
@@ -29,10 +29,9 @@ const Dashboard: React.FC = () => {
         </div>
       </nav>
       <div className="dashboard-content">
-        {/* Space for future content */}
       </div>
     </div>
   );
 };
 
-export default Dashboard;
+export default Summary;
