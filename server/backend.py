@@ -67,6 +67,22 @@ def get_vitals_data():
         #[float(vitals['time'][i]), float(vitals['heartbeat'][i], float(vitals['temperature'][i]))] for i in len(range(vitals['time']))
         [float(vital[0]), float(vital[1]), float(vital[2]), -1000 if vital[3] == None else float(vital[3])] for vital in vitals
     ]
+
+    description_temp = ""
+    if (vitals[-1][1] > 150):
+        description_temp += "High BPM"
+    if (vitals[-1][1] < 110):
+        description_temp += "Low BPM"
+    if (vitals[-1][2] < 60):
+        description_temp += "Low Temperature"
+    if (vitals[-1][2] > 130):
+        description_temp += "High Temperature"
+
+    if description_temp != "":
+        flags_query.insert_flag_table(str(int(vitals[-1][0])), "Vitals", "", -1, description_temp)
+
+
+
     #print(data)
     return jsonify(data)
     #return data
