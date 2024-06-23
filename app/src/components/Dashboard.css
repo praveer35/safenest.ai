@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap');
+
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif; /* Default font family */
+}
+
+.dashboard-page {
+  height: 100vh;
+  background-color: #1a1a2e;
+  color: #fff; /* White color for the text */
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  width: 100%; /* Full width */
+  max-width: calc(100vw - 2.5rem); /* Ensures navbar doesn't exceed viewport width minus padding */
+  height: 4.25rem; /* Reduced height */
+  padding: 0 1.25rem; /* Adjusted padding */
+  background-color: #fff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  z-index: 2; /* Ensure the navbar is on top */
+}
+
+.project-name {
+  color: #000; /* Black color for project name */
+  font-size: 1.2rem; /* Adjusted font size */
+  margin-left: 1rem; /* Adjusted margin */
+}
+
+.dashboard-title {
+  color: #1a1a2e; /* Navy blue color for dashboard title */
+  font-family: 'Montserrat', sans-serif; /* Using Montserrat for SafeNet.AI */
+  font-weight: 600;
+  font-size: 1.6rem; /* Adjusted font size */
+}
+
+.navbar-center {
+  flex: 1; /* Takes up remaining space */
+  display: flex;
+  justify-content: center;
+}
+
+.navbar-right {
+  display: flex;
+  gap: 1rem;
+  margin-left: auto; /* Pushes buttons to the right */
+}
+
+.navbar-button {
+  background: none;
+  border: none;
+  color: #000; /* Black color for buttons */
+  font-size: 1rem; /* Adjusted font size */
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s; /* Transition for background and text color */
+}
+
+.navbar-button:hover {
+  background-color: #f0f0f0; /* Light background color on hover */
+  color: #1a1a2e; /* Navy blue text color on hover */
+}
+
+.dashboard-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 4.25rem; /* Adjusted padding for navbar height */
+}
