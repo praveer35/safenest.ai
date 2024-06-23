@@ -5,6 +5,7 @@ import Dashboard from './components/Dashboard';
 import Charter from './components/Charter';
 import Summary from './components/Summary';
 import SignUpPage from './components/SignUpPage';
+import VideoUpload from './components/VideoUpload';
 
 const App: React.FC = () => {
   return (
@@ -15,6 +16,7 @@ const App: React.FC = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/charter" element = {<Charter />} />
         <Route path="/summary" element = {<Summary />} />
+        <Route path="/videoupload" element={<VideoUpload />} />
       </Routes>
     </Router>
   );

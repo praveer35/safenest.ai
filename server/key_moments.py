@@ -1,6 +1,7 @@
 import cv2
 import os
 import argparse
+import shutil
 
 # Supported video file extensions
 SUPPORTED_EXTENSIONS = {'.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv'}
@@ -25,8 +26,9 @@ def extract_key_frames(video_path, threshold=100, min_contour_area=1000):
         return
 
     # Create the output directory if it doesn't exist
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    if os.path.exists(output_dir):
+        shutil.rmtree(output_dir)
+    os.makedirs(output_dir)
 
     # Frame counters
     current_frame = 0
@@ -65,7 +67,7 @@ def extract_key_frames(video_path, threshold=100, min_contour_area=1000):
 
         if motion_detected:
             # Save the frame in the output directory
-            frame_name = os.path.join(output_dir, f'frame{key_frame_count}.jpg')
+            frame_name = os.path.join(output_dir, f'frame{current_frame}.jpg')
             print(f'Creating... {frame_name}')
             cv2.imwrite(frame_name, frame)
             key_frame_count += 1
@@ -81,8 +83,8 @@ def extract_key_frames(video_path, threshold=100, min_contour_area=1000):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Extract key frames from a video.')
     parser.add_argument('video_path', type=str, help='Path to the video file')
-    parser.add_argument('--threshold', type=int, default=100, help='Threshold for detecting motion')
-    parser.add_argument('--min_contour_area', type=int, default=1000, help='Minimum contour area to be considered as motion')
+    parser.add_argument('--threshold', type=int, default=5, help='Threshold for detecting motion')
+    parser.add_argument('--min_contour_area', type=int, default=500, help='Minimum contour area to be considered as motion')
     args = parser.parse_args()
 
     extract_key_frames(args.video_path, args.threshold, args.min_contour_area)
