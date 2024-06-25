@@ -171,6 +171,7 @@ const Charter: React.FC = () => {
   return (
     <div>
       {/* <h1>Line Chart from Python Backend</h1> */}
+      <p>Live Vital Information for Infant:</p>
       {vitalsData.length > 0 ? (
         <Chart
           chartType="LineChart"
@@ -183,6 +184,7 @@ const Charter: React.FC = () => {
       ) : (
         <p>Vital data loading...</p>
       )}
+      <p>Potential Dangers:</p>
       {aiData.length > 0 ? (
         <Chart
           chartType="LineChart"

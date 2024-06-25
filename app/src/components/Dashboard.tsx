@@ -74,7 +74,11 @@ const Dashboard: React.FC = () => {
             <button type="submit">Upload</button>
           </form>
           {uploadStatus && <p>{uploadStatus}</p>}
-          {isUploadSuccessful && <Charter />} {/* Conditionally render Charter */}
+          {isUploadSuccessful && (
+            <div className="graphs">
+              <Charter />
+            </div>
+          )}
         </div>
       </div>
     </div>

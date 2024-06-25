@@ -77,7 +77,7 @@ def get_vitals_data():
 
 
 
-    data = [["Time", "BPM", "Temperature", "Point"]] + [
+    data = [["Time", "BPM", "Temperature", "Point"], [0.0, 0.0, 0.0, -1000]] + [
         #[float(vitals['time'][i]), float(vitals['heartbeat'][i], float(vitals['temperature'][i]))] for i in len(range(vitals['time']))
         [float(vital[0]), float(vital[1]), float(vital[2]), -1000 if vital[3] == None else float(vital[3])] for vital in vitals
     ]

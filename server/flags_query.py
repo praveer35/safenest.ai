@@ -139,8 +139,8 @@ def add_session(vitals_str, ai_data_str, bpm_flags_str, temp_flags_str, choking_
     conn = sqlite3.connect('flags.db')
     cursor = conn.cursor()
 
-    sql = '''INSERT INTO SessionTable (vitals_str, ai_data_str, bpm_flags_str, temp_flags_str, choking_flags_str, shocking_flags_str, suffocation_flags_str, sharp_flags_str)
-            VALUES (?,?,??,?,?,?,?)'''
+    sql = '''INSERT INTO SessionTable (session_id, vital_times, vital_bpm ai_data_str, bpm_flags_str, temp_flags_str, choking_flags_str, shocking_flags_str, suffocation_flags_str, sharp_flags_str)
+            VALUES (?,?,?,?,?,?,?,?)'''
     
     cursor.execute(sql, (vitals_str, ai_data_str, bpm_flags_str, temp_flags_str, choking_flags_str, shocking_flags_str, suffocation_flags_str, sharp_flags_str))
     conn.commit()
